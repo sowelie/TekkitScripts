@@ -153,7 +153,10 @@ function sendMessage(client, message)
   if wlanOn then
     if type(client) == "table" then
       for i = 1, #client do
-        rednet.send(tonumber(client[i]), message)
+		print("SENDING MESSAGE to ", client[i])
+        local sent = rednet.broadcast(message)
+		
+		print ("SENT: ", sent)
       end
     else
       rednet.send(tonumber(client), message)
@@ -323,24 +326,22 @@ function pollReactor(id, runcheck, tick)
   end
 
   if not _dryRun and runcheck then
-    local total = (d.coolantSlots + d.fuel + d.depleted)
-    local full = total >= maxSlots
+    -- local total = (d.coolantSlots + d.fuel + d.depleted)
+    -- local full = total >= maxSlots
     if e then
       -- Check contents
       if tick >= checkTicks then
-        if not full then
-          c = _pollReactorCoolant(d, i, id)
-          if c > 0 then
-            pushCoolant(id, c)
-            r = false
-          end
+		  c = _pollReactorCoolant(d, i, id)
+		  if c > 0 then
+			pushCoolant(id)
+			r = false
+		  end
 
-          c = _pollReactorFuel(d, i, id)
-          if c > 0 then
-            pushFuel(id, c)
-            r = false
-          end
-        end
+		  c = _pollReactorFuel(d, i, id)
+		  if c > 0 then
+			pushFuel(id)
+			r = false
+		  end
       end
 
       -- Check environment
@@ -387,7 +388,7 @@ function sendPulse(color, stimeout, etimeout)
   if not stimeout then stimeout = pulseTime end
   if not etimeout then etimeout = pulseTime end
 
-  if not _dryRun then
+  if not _dryRun then  
     redstone.setBundledOutput(bundleSide, 0)
     os.sleep(stimeout)
     redstone.setBundledOutput(bundleSide, color)
@@ -415,11 +416,23 @@ function pushFuel(id, count)
   if not count then count = 1 end
 
   if  not (_reactorStatus[id].fuelTime > os.clock()) then
+  
+	-- shut down the reactor while reloading fuel
+	stopReactor(id, false)
+
+	-- sleep to ensure all coolant has been loaded
+	-- this will prevent from fuel slots from being loaded with coolant
+	os.sleep(2);
+  
     for i = 1, count do
       dprint(string.format("PUSH FUEL %d/%d REACTOR #%d", i, count, id))
       sendPulse(wireTriggers[id].fuel)
     end
+	
     _reactorStatus[id].fuelTime = os.clock() + fuelTime
+	
+	-- start the reactor back up
+	startReactor(id)
 
     return (true)
   end

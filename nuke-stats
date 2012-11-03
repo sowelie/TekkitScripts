@@ -103,10 +103,10 @@ end
 while _running do
   senderId, message, distance = rednet.receive(wlanTimeout)
   if senderId then
-    --print("#", senderId, " ", distance, "m ", #message, "b")
-    if senderId == serverId then
+    -- print("#", senderId, " ", distance, "m ", #message, "b")
+    -- if senderId == serverId then
       handleMessage(message)
-    end
+    -- end
   end
 
   --os.sleep(sleepTimeout)

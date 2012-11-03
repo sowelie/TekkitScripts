@@ -24,8 +24,8 @@
 -- 
 -- Configuration
 -- 
-reactorCount      = 2
-reactorsEnabled   = {1, 2}
+reactorCount      = 1
+reactorsEnabled   = {1}
 
 pulseTime         = 0.4
 sleepTime         = 0.1
@@ -37,8 +37,8 @@ buttonTicks       = 11
 rebootTries       = 3
 rebootWaitTime    = 1.0
 
-maxCoolant        = 10
-maxFuel           = 44
+maxCoolant        = 448
+maxFuel           = 47
 maxSlots          = 54
 maxHeat           = 2000
 
@@ -203,7 +203,8 @@ function getReactorContents(id)
   local contents = {
     coolant  = 0,
     fuel     = 0,
-    depleted = 0
+    depleted = 0,
+    coolantSlots = 0
   }
 
   local p = "ReactorContent"
@@ -213,8 +214,15 @@ function getReactorContents(id)
 
     for i = 1, #d do
       local ii = d[i]
+      local quantity = 0
+      
+      if string.match(ii, "*") then
+      	quantity = split(ii, "*")[1]
+      end
+      
       if string.match(ii, "tile.ice") then
-        contents.coolant = contents.coolant + 1
+        contents.coolant = contents.coolant + quantity
+        contents.coolantSlots = contents.coolantSlots + 1
       elseif string.match(ii, "UranEmpty") then
         contents.depleted = contents.depleted + 1
       elseif string.match(ii, "Uran") then
@@ -315,7 +323,7 @@ function pollReactor(id, runcheck, tick)
   end
 
   if not _dryRun and runcheck then
-    local total = (d.coolant + d.fuel + d.depleted)
+    local total = (d.coolantSlots + d.fuel + d.depleted)
     local full = total >= maxSlots
     if e then
       -- Check contents
@@ -429,6 +437,25 @@ end
 
 function stopAlarm()
   rs.setOutput(alarmSide, false)
+end
+
+function split(str, pat)
+   local t = {}  -- NOTE: use {n = 0} in Lua-5.0
+   local fpat = "(.-)" .. pat
+   local last_end = 1
+   local s, e, cap = str:find(fpat, 1)
+   while s do
+      if s ~= 1 or cap ~= "" then
+	 table.insert(t,cap)
+      end
+      last_end = e+1
+      s, e, cap = str:find(fpat, last_end)
+   end
+   if last_end <= #str then
+      cap = str:sub(last_end)
+      table.insert(t, cap)
+   end
+   return t
 end
 
 -- 

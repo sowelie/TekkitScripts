@@ -1,3 +1,14 @@
+
+# Credit
+
+This was forked from https://github.com/andersevenrud/TekkitScripts.  This is not my work! I created a fork and added code
+to make the reactor more efficient.  I use the layout described here: http://thetekkit.wikia.com/wiki/Tutorial_/_Safe,_Easy,_&_Powerful_Nuclear_Reactor.
+
+My tweaks attempt to make sure that the ice is always loaded in a way that it preserves the original layout of the
+reactor.
+
+Thank you to andersevenrud for the original script.
+
 A collection of Lua scripts/APIs and schematics for creating advanced machines in Tekkit (Minecraft)
 
 This was all created using Tekkit 3.1.2
